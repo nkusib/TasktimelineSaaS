@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --navy:      #0B1622;
+  --navy2:     #0F1E2E;
+  --navy3:     #162030;
+  --gold:      #C9973A;
+  --gold-lt:   #E8C87A;
+  --gold-dim:  rgba(201,151,58,0.15);
+  --gold-glow: rgba(201,151,58,0.06);
+  --white:     #F5F0E8;
+  --muted:     #8A9BB0;
+  --deep:      #2A3A4E;
+  --border:    rgba(201,151,58,0.1);
+}
+
+@theme inline {
+  --color-navy:    #0B1622;
+  --color-navy2:   #0F1E2E;
+  --color-navy3:   #162030;
+  --color-gold:    #C9973A;
+  --color-gold-lt: #E8C87A;
+  --color-cream:   #F5F0E8;
+  --color-muted:   #8A9BB0;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--navy);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: var(--font-display, 'Cormorant Garamond', serif);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #C9973A 0%, #E8C87A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gold-gradient-bg {
+  background: linear-gradient(135deg, #C9973A 0%, #E8C87A 100%);
+}
+
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.35s; }
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
