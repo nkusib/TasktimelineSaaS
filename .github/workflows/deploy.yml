@@ -1,0 +1,33 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Vercel
+        run: |
+          npx vercel --token=${{ secrets.VERCEL_TOKEN }} --prod --yes \
+            -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            -e STRIPE_SECRET_KEY="${{ secrets.STRIPE_SECRET_KEY }}" \
+            -e NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}" \
+            -e STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
+            -e STRIPE_PRO_MONTHLY_PRICE_ID="${{ secrets.STRIPE_PRO_MONTHLY_PRICE_ID }}" \
+            -e STRIPE_TEAM_MONTHLY_PRICE_ID="${{ secrets.STRIPE_TEAM_MONTHLY_PRICE_ID }}" \
+            -e STRIPE_BUSINESS_MONTHLY_PRICE_ID="${{ secrets.STRIPE_BUSINESS_MONTHLY_PRICE_ID }}" \
+            -e NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}"
