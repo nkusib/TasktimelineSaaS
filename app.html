@@ -75,6 +75,8 @@
       const ReactDOM = window.ReactDOM;
       const { useEffect, useMemo, useState } = React;
 
+      const isSharedView = !!(new URLSearchParams(window.location.search).get("data"));
+
       const [tasks, setTasks] = useState(() => {
         // Load from URL first
         const urlData = new URLSearchParams(window.location.search).get("data");
@@ -100,6 +102,7 @@
       const [showForm, setShowForm] = useState(false);
       const [copied, setCopied] = useState(false);
       const [showUpgrade, setShowUpgrade] = useState(false);
+      const [showAcqBanner, setShowAcqBanner] = useState(isSharedView);
 
       useEffect(() => {
         localStorage.setItem("ttb.tasks", JSON.stringify(tasks));
@@ -209,6 +212,13 @@
             React.createElement("a", { href: UPGRADE_URL, className: "block w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-purple-600 text-white font-bold text-sm hover:opacity-90 mb-3" }, "Upgrade to Pro — $19/month →"),
             React.createElement("button", { onClick: () => setShowUpgrade(false), className: "text-sm text-gray-400 hover:text-gray-600" }, "Maybe later")
           )
+        ),
+
+        // Viral acquisition banner — shown when opening a shared timeline URL
+        showAcqBanner && React.createElement("div", { className: "bg-gradient-to-r from-amber-400 to-orange-500 text-white py-3 px-4 flex flex-wrap items-center justify-center gap-3 text-sm" },
+          React.createElement("span", { className: "font-semibold" }, "Someone shared this timeline with you using TaskTimeline Pro."),
+          React.createElement("a", { href: "https://nkusib.github.io/rwandatask-timeline/", className: "underline font-bold whitespace-nowrap" }, "Create your own free →"),
+          React.createElement("button", { onClick: () => setShowAcqBanner(false), className: "ml-2 opacity-70 hover:opacity-100 text-lg leading-none font-bold", "aria-label": "Dismiss" }, "×")
         ),
 
         // Free plan banner
