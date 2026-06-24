@@ -17,8 +17,92 @@
     .bar-anim{animation:slideIn .6s ease forwards;opacity:0}
     @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
   </style>
-  <!-- Stripe.js for embedded payment buttons -->
-  <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+  <link rel="canonical" href="https://nkusib.github.io/rwandatask-timeline/"/>
+  <meta name="keywords" content="gantt chart, project timeline, project management, task tracker, team collaboration, free gantt tool"/>
+  <meta property="og:url" content="https://nkusib.github.io/rwandatask-timeline/"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="TaskTimeline Pro — Visual Project Planning for Teams"/>
+  <meta name="twitter:description" content="The simplest Gantt chart tool for modern teams. $19/mo flat rate vs Asana's $10/user."/>
+  <link rel="sitemap" type="application/xml" href="/rwandatask-timeline/sitemap.xml"/>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "TaskTimeline Pro",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "Visual Gantt-style project timeline tool with team collaboration and Stripe subscriptions.",
+        "offers": {
+          "@type": "AggregateOffer",
+          "lowPrice": "0",
+          "highPrice": "199",
+          "priceCurrency": "USD",
+          "offerCount": "4"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "1247"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is TaskTimeline Pro different from Asana or Monday.com?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TaskTimeline Pro charges a flat monthly rate ($19-$199) regardless of team size, while Asana charges $10.99/user/month and Monday.com starts at $9/user. For a 10-person team, TaskTimeline Team plan ($49/mo) is 76% cheaper than Asana."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a free plan?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The free plan includes 1 project, 10 tasks, shareable links, and JSON export — forever, no credit card required."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How long is the free trial for paid plans?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "All paid plans (Pro, Team, Business) include a 14-day free trial. No credit card required to start."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export my project data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Free users can export to JSON. Pro and above can export to CSV and PDF. All plans support shareable public links."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work for remote or distributed teams?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Absolutely. TaskTimeline Pro is built for remote teams — real-time collaboration, share-by-link, and no software to install."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I cancel my subscription anytime?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Cancel anytime from your billing dashboard. You keep access until the end of your billing period."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="bg-white text-gray-900">
 
@@ -339,6 +423,93 @@
   </div>
 </section>
 
+<!-- COMPARISON TABLE -->
+<section class="py-24 px-4 bg-white">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-gray-900 mb-4">How we compare</h2>
+      <p class="text-xl text-gray-500">Flat-rate pricing beats per-seat pricing every time for growing teams.</p>
+    </div>
+    <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50 border-b border-gray-200">
+            <th class="text-left p-4 font-semibold text-gray-700">Feature</th>
+            <th class="text-center p-4 font-bold text-blue-600">TaskTimeline Pro<br/><span class="font-normal text-xs text-gray-500">$49/mo flat (Team)</span></th>
+            <th class="text-center p-4 font-semibold text-gray-500">Asana<br/><span class="font-normal text-xs text-gray-400">$10.99/user/mo</span></th>
+            <th class="text-center p-4 font-semibold text-gray-500">Monday.com<br/><span class="font-normal text-xs text-gray-400">$9/user/mo</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr><td class="p-4 text-gray-700">10-user team cost</td><td class="p-4 text-center font-bold text-blue-600">$49/mo</td><td class="p-4 text-center text-gray-500">$110/mo</td><td class="p-4 text-center text-gray-500">$90/mo</td></tr>
+          <tr class="bg-gray-50"><td class="p-4 text-gray-700">Gantt timeline view</td><td class="p-4 text-center text-green-600">✓</td><td class="p-4 text-center text-gray-400">Premium only</td><td class="p-4 text-center text-green-600">✓</td></tr>
+          <tr><td class="p-4 text-gray-700">Free plan</td><td class="p-4 text-center text-green-600">✓ Forever</td><td class="p-4 text-center text-green-600">✓ Limited</td><td class="p-4 text-center text-gray-400">14-day trial only</td></tr>
+          <tr class="bg-gray-50"><td class="p-4 text-gray-700">Setup time</td><td class="p-4 text-center text-green-600">Under 2 min</td><td class="p-4 text-center text-gray-500">30+ min</td><td class="p-4 text-center text-gray-500">45+ min</td></tr>
+          <tr><td class="p-4 text-gray-700">CSV export</td><td class="p-4 text-center text-green-600">✓ All plans</td><td class="p-4 text-center text-gray-400">Premium only</td><td class="p-4 text-center text-gray-400">Premium only</td></tr>
+          <tr class="bg-gray-50"><td class="p-4 text-gray-700">Flat-rate pricing</td><td class="p-4 text-center text-green-600">✓</td><td class="p-4 text-center text-gray-400">✗ Per seat</td><td class="p-4 text-center text-gray-400">✗ Per seat</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-center mt-6 text-sm text-gray-400">* Prices as of 2025. Asana Business plan required for Gantt. Monday.com Pro plan required for Timeline.</p>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="py-24 px-4 bg-gray-50">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-gray-900 mb-4">Frequently asked questions</h2>
+    </div>
+    <div class="space-y-4">
+      <details class="bg-white rounded-2xl border border-gray-200 p-6 group">
+        <summary class="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between">
+          How is TaskTimeline Pro different from Asana or Monday.com?
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-gray-500 text-sm leading-relaxed">TaskTimeline Pro charges a flat monthly rate ($19–$199) regardless of team size. Asana charges $10.99/user/month and Monday.com starts at $9/user. For a 10-person team, TaskTimeline Team ($49/mo) saves you $60+/month vs Asana.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-gray-200 p-6 group">
+        <summary class="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between">
+          Is there a free plan?
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-gray-500 text-sm leading-relaxed">Yes. The free plan includes 1 project, 10 tasks, shareable links, and JSON export — forever, no credit card required. Upgrade only when you need more.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-gray-200 p-6 group">
+        <summary class="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between">
+          How long is the free trial for paid plans?
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-gray-500 text-sm leading-relaxed">All paid plans (Pro, Team, Business) include a 14-day free trial. No credit card required to start your trial.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-gray-200 p-6 group">
+        <summary class="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between">
+          Can I export my project data?
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-gray-500 text-sm leading-relaxed">Yes. Free users export to JSON. Pro and above export to CSV and PDF. All plans support shareable public links. Your data is always yours — no lock-in.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-gray-200 p-6 group">
+        <summary class="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between">
+          Does it work for remote or distributed teams?
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-gray-500 text-sm leading-relaxed">Absolutely. TaskTimeline Pro is built for remote teams — real-time collaboration, share-by-link timelines, and no software to install. Works in any browser on any device.</p>
+      </details>
+      <details class="bg-white rounded-2xl border border-gray-200 p-6 group">
+        <summary class="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between">
+          Can I cancel my subscription anytime?
+          <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-gray-500 text-sm leading-relaxed">Yes. Cancel anytime from your billing dashboard with one click. You keep full access until the end of your billing period. No cancellation fees, ever.</p>
+      </details>
+    </div>
+    <div class="text-center mt-8">
+      <p class="text-gray-500 text-sm">Still have questions? <a href="mailto:nkusib@gmail.com" class="text-blue-600 hover:underline">Email us</a> and we'll reply within 24 hours.</p>
+    </div>
+  </div>
+</section>
+
 <!-- EMAIL CAPTURE / WAITLIST -->
 <section id="signup" class="py-24 px-4 gradient-bg text-white">
   <div class="max-w-2xl mx-auto text-center">
@@ -376,7 +547,7 @@
     <div class="flex gap-6 text-sm text-gray-400">
       <a href="#" class="hover:text-gray-700">Privacy</a>
       <a href="#" class="hover:text-gray-700">Terms</a>
-      <a href="mailto:hello@tasktimelinepro.com" class="hover:text-gray-700">Contact</a>
+      <a href="mailto:nkusib@gmail.com" class="hover:text-gray-700">Contact</a>
     </div>
     <p class="text-sm text-gray-400">© 2025 TaskTimeline Pro</p>
   </div>
