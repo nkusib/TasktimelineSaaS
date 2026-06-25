@@ -11,16 +11,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check deploy secrets
+        id: check
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "::notice::VERCEL_TOKEN not set — skipping Vercel deploy."
+            echo "::notice::See README.md Step 4 to activate full SaaS deployment."
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Node.js
+        if: steps.check.outputs.configured == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.check.outputs.configured == 'true'
         run: npm ci
 
       - name: Deploy to Vercel
+        if: steps.check.outputs.configured == 'true'
         run: |
           npx vercel --token=${{ secrets.VERCEL_TOKEN }} --prod --yes \
             -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
