@@ -12,11 +12,17 @@ export async function POST(req: NextRequest) {
     }
 
     const user = db.prepare(
-      'SELECT id, email, password_hash FROM users WHERE email = ?'
-    ).get(email.toLowerCase().trim()) as { id: string; email: string; password_hash: string } | undefined
+      'SELECT id, email, password_hash, role, is_active FROM users WHERE email = ?'
+    ).get(email.toLowerCase().trim()) as {
+      id: string; email: string; password_hash: string; role: string; is_active: number
+    } | undefined
 
     if (!user) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+
+    if (!user.is_active) {
+      return NextResponse.json({ error: 'Account suspended. Contact support.' }, { status: 403 })
     }
 
     const valid = await bcrypt.compare(password, user.password_hash)
@@ -25,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = await createToken(user.id)
-    const res = NextResponse.json({ ok: true })
+    const res = NextResponse.json({ ok: true, role: user.role })
     res.cookies.set(setSessionCookie(token))
     return res
   } catch (err) {

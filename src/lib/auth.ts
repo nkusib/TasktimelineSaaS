@@ -1,12 +1,13 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
-import { db, User } from './db'
+import { db } from './db'
+import type { User } from './db'
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'dev-secret-change-in-production-min-32-chars'
+  process.env.JWT_SECRET || 'remitflow-secret-change-in-production-min-32-chars'
 )
 
-const COOKIE_NAME = 'ttp_session'
+export const COOKIE_NAME = 'rf_session'
 
 export async function createToken(userId: string): Promise<string> {
   return new SignJWT({ sub: userId })
@@ -35,13 +36,25 @@ export async function getSession(): Promise<User | null> {
     if (!userId) return null
 
     const user = db.prepare(
-      'SELECT id, email, name, plan, stripe_customer_id, stripe_subscription_id, subscription_status, created_at FROM users WHERE id = ?'
+      'SELECT * FROM users WHERE id = ? AND is_active = 1'
     ).get(userId) as User | undefined
 
     return user ?? null
   } catch {
     return null
   }
+}
+
+export async function requireAuth(): Promise<User> {
+  const user = await getSession()
+  if (!user) throw new Error('Unauthorized')
+  return user
+}
+
+export async function requireAdmin(): Promise<User> {
+  const user = await requireAuth()
+  if (!['admin', 'super_admin'].includes(user.role)) throw new Error('Forbidden')
+  return user
 }
 
 export function setSessionCookie(token: string) {
@@ -63,11 +76,4 @@ export function clearSessionCookie() {
     maxAge: 0,
     path: '/',
   }
-}
-
-export const PLAN_LIMITS = {
-  free: { projects: 1, tasks: 10, teamMembers: 0 },
-  pro: { projects: 50, tasks: 1000, teamMembers: 0 },
-  team: { projects: 100, tasks: 5000, teamMembers: 10 },
-  business: { projects: Infinity, tasks: Infinity, teamMembers: Infinity },
 }

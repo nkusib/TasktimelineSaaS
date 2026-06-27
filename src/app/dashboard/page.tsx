@@ -1,170 +1,222 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { getSession } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { BarChart3, Plus, FolderOpen, Clock, CheckCircle2, AlertCircle, Settings, CreditCard, LogOut } from 'lucide-react'
-import { planColor } from '@/lib/utils'
+import Link from 'next/link'
+import { Bell, Settings, ChevronRight, TrendingUp, Clock, AlertCircle, ArrowUpRight, ArrowDownLeft, Plus } from 'lucide-react'
+import type { Transaction, Wallet } from '@/lib/db'
+import { CURRENCIES, TRANSACTION_STATUS_LABELS } from '@/lib/constants'
+
+function formatAmount(amount: number, currency: string) {
+  const cur = CURRENCIES[currency as keyof typeof CURRENCIES]
+  return `${cur?.symbol ?? ''}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+function timeAgo(ts: number) {
+  const diff = Date.now() / 1000 - ts
+  if (diff < 60) return 'Just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
+}
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  NG: '🇳🇬', KE: '🇰🇪', GH: '🇬🇭', TZ: '🇹🇿', ZA: '🇿🇦',
+  UG: '🇺🇬', SN: '🇸🇳', CI: '🇨🇮', CM: '🇨🇲', MA: '🇲🇦',
+  ET: '🇪🇹', ZM: '🇿🇲',
+}
 
 export default async function DashboardPage() {
   const user = await getSession()
   if (!user) redirect('/auth/login')
+  if (['admin', 'super_admin'].includes(user.role)) redirect('/admin')
 
-  const projects = db.prepare(`
-    SELECT p.*, COUNT(t.id) as task_count,
-      SUM(CASE WHEN t.status = 'Done' THEN 1 ELSE 0 END) as done_count
-    FROM projects p
-    LEFT JOIN tasks t ON t.project_id = p.id
-    WHERE p.user_id = ?
-    GROUP BY p.id
-    ORDER BY p.updated_at DESC
-  `).all(user.id) as any[]
+  const wallets = db.prepare('SELECT * FROM wallets WHERE user_id = ? ORDER BY is_primary DESC').all(user.id) as Wallet[]
+  const recentTxns = db.prepare(
+    'SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10'
+  ).all(user.id) as Transaction[]
 
-  const totalTasks = (db.prepare(`
-    SELECT COUNT(*) as c FROM tasks t
-    JOIN projects p ON p.id = t.project_id WHERE p.user_id = ?
-  `).get(user.id) as any).c
+  const primaryWallet = wallets.find(w => w.is_primary) ?? wallets[0]
+  const totalSentThisMonth = recentTxns
+    .filter(t => t.status === 'completed' && t.created_at > Date.now() / 1000 - 2592000)
+    .reduce((s, t) => s + t.send_amount, 0)
+  const pendingCount = recentTxns.filter(t => ['pending', 'processing'].includes(t.status)).length
 
-  const doneTasks = (db.prepare(`
-    SELECT COUNT(*) as c FROM tasks t
-    JOIN projects p ON p.id = t.project_id
-    WHERE p.user_id = ? AND t.status = 'Done'
-  `).get(user.id) as any).c
+  const kycClass = {
+    unverified: 'bg-red-50 text-red-700 border-red-200',
+    pending: 'bg-amber-50 text-amber-700 border-amber-200',
+    verified: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    rejected: 'bg-red-50 text-red-700 border-red-200',
+  }[user.kyc_status] ?? 'bg-gray-100 text-gray-700 border-gray-200'
 
-  const inProgress = (db.prepare(`
-    SELECT COUNT(*) as c FROM tasks t
-    JOIN projects p ON p.id = t.project_id
-    WHERE p.user_id = ? AND t.status = 'In Progress'
-  `).get(user.id) as any).c
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Nav */}
-      <nav className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold">TaskTimeline Pro</span>
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center font-bold text-xs text-white">RF</div>
+            <span className="font-bold text-gray-900">RemitFlow</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${planColor(user.plan)}`}>
-              {user.plan}
-            </span>
-            <Link href="/billing" className="text-gray-400 hover:text-gray-700">
-              <CreditCard className="w-5 h-5" />
-            </Link>
-            <Link href="/settings" className="text-gray-400 hover:text-gray-700">
+          <nav className="hidden md:flex items-center gap-6 text-sm">
+            <Link href="/dashboard" className="text-violet-600 font-semibold">Home</Link>
+            <Link href="/send" className="text-gray-600 hover:text-gray-900">Send</Link>
+            <Link href="/transactions" className="text-gray-600 hover:text-gray-900">History</Link>
+            <Link href="/recipients" className="text-gray-600 hover:text-gray-900">Recipients</Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600">
+              <Bell className="w-5 h-5" />
+            </button>
+            <Link href="/settings" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600">
               <Settings className="w-5 h-5" />
             </Link>
-            <form action="/api/auth/logout" method="POST">
-              <button type="submit" className="text-gray-400 hover:text-gray-700">
-                <LogOut className="w-5 h-5" />
-              </button>
-            </form>
+            <div className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Good morning, {user.name.split(' ')[0]}!</h1>
-            <p className="text-gray-500 mt-1">Here&apos;s an overview of all your projects.</p>
-          </div>
-          <Link
-            href="/projects/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New project
-          </Link>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Projects', value: projects.length, icon: FolderOpen, color: 'text-brand-600 bg-brand-50' },
-            { label: 'Total tasks', value: totalTasks, icon: BarChart3, color: 'text-purple-600 bg-purple-50' },
-            { label: 'In progress', value: inProgress, icon: Clock, color: 'text-amber-600 bg-amber-50' },
-            { label: 'Completed', value: doneTasks, icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50' },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}>
-                <stat.icon className="w-5 h-5" />
-              </div>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        {user.kyc_status !== 'verified' && (
+          <div className={`mb-5 p-4 rounded-xl border flex items-center justify-between gap-4 ${kycClass}`}>
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 shrink-0" />
               <div>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                <div className="text-sm text-gray-400">{stat.label}</div>
+                <div className="font-semibold text-sm">
+                  {user.kyc_status === 'unverified' ? 'Verify your identity to start sending' :
+                   user.kyc_status === 'pending' ? 'Verification in progress — usually 2 hours' :
+                   'Verification rejected — please resubmit'}
+                </div>
+                {user.kyc_status === 'unverified' && (
+                  <div className="text-xs opacity-75">Upload ID to unlock transfers up to £5,000/day</div>
+                )}
               </div>
             </div>
+            {user.kyc_status === 'unverified' && (
+              <Link href="/verify" className="shrink-0 px-4 py-2 rounded-lg bg-white font-semibold text-sm shadow-sm hover:shadow transition-all whitespace-nowrap">
+                Verify now →
+              </Link>
+            )}
+          </div>
+        )}
+
+        <div className="grid md:grid-cols-3 gap-4 mb-5">
+          <div className="md:col-span-2 rounded-2xl p-6 text-white" style={{ background: 'linear-gradient(135deg, #4c1d95, #7c3aed)' }}>
+            <div className="text-white/70 text-sm mb-1">Good {greeting}, {user.name.split(' ')[0]}</div>
+            {primaryWallet ? (
+              <>
+                <div className="text-3xl font-bold mb-0.5">{formatAmount(primaryWallet.balance, primaryWallet.currency)}</div>
+                <div className="text-white/60 text-xs">{primaryWallet.currency} Balance</div>
+              </>
+            ) : (
+              <div className="text-2xl font-bold mb-0.5">—</div>
+            )}
+            <div className="mt-4 flex gap-3">
+              <Link href="/send" className="flex items-center gap-1.5 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-sm font-semibold transition-colors">
+                <ArrowUpRight className="w-4 h-4" /> Send
+              </Link>
+              <button className="flex items-center gap-1.5 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-sm font-semibold transition-colors">
+                <ArrowDownLeft className="w-4 h-4" /> Top up
+              </button>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl p-5 border border-gray-100">
+              <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                <TrendingUp className="w-3.5 h-3.5" /> Sent this month
+              </div>
+              <div className="text-2xl font-bold text-gray-900">{formatAmount(totalSentThisMonth, primaryWallet?.currency ?? 'GBP')}</div>
+            </div>
+            <div className="bg-white rounded-2xl p-5 border border-gray-100">
+              <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                <Clock className="w-3.5 h-3.5" /> Pending transfers
+              </div>
+              <div className="text-2xl font-bold text-gray-900">{pendingCount}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-3 mb-5">
+          {[
+            { icon: '🇳🇬', label: 'To Nigeria', href: '/send?to=NG' },
+            { icon: '🇰🇪', label: 'To Kenya', href: '/send?to=KE' },
+            { icon: '🇬🇭', label: 'To Ghana', href: '/send?to=GH' },
+            { icon: '🌍', label: 'More', href: '/send' },
+          ].map(a => (
+            <Link key={a.label} href={a.href} className="bg-white rounded-2xl p-4 border border-gray-100 hover:border-violet-200 hover:shadow-sm transition-all text-center">
+              <div className="text-2xl mb-1">{a.icon}</div>
+              <div className="text-xs font-medium text-gray-700">{a.label}</div>
+            </Link>
           ))}
         </div>
 
-        {/* Upgrade banner for free users */}
-        {user.plan === 'free' && (
-          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-brand-600 to-purple-600 text-white flex items-center justify-between">
-            <div>
-              <div className="font-semibold">Upgrade to Pro — 14 days free</div>
-              <div className="text-sm text-white/80">Unlock unlimited projects, tasks, exports, and more.</div>
-            </div>
-            <Link href="/billing" className="px-4 py-2 rounded-xl bg-white text-brand-700 font-semibold text-sm hover:bg-brand-50 transition-colors shrink-0">
-              Upgrade now
+        <div className="bg-white rounded-2xl border border-gray-100">
+          <div className="flex items-center justify-between p-5 border-b border-gray-50">
+            <h2 className="font-bold text-gray-900">Recent transfers</h2>
+            <Link href="/transactions" className="text-sm text-violet-600 hover:underline font-medium flex items-center gap-1">
+              See all <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-        )}
 
-        {/* Projects Grid */}
-        {projects.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
-            <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="font-semibold text-gray-700 mb-2">No projects yet</h3>
-            <p className="text-gray-400 text-sm mb-4">Create your first project to get started.</p>
-            <Link href="/projects/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700">
-              <Plus className="w-4 h-4" /> Create project
-            </Link>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((p: any) => {
-              const pct = p.task_count > 0 ? Math.round((p.done_count / p.task_count) * 100) : 0
-              return (
-                <Link
-                  key={p.id}
-                  href={`/projects/${p.id}`}
-                  className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-brand-200 hover:shadow-md transition-all group"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: p.color + '20' }}>
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: p.color }}></div>
+          {recentTxns.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="text-4xl mb-3">💸</div>
+              <div className="font-semibold text-gray-900 mb-1">No transfers yet</div>
+              <div className="text-sm text-gray-500 mb-4">Send money to your first recipient</div>
+              <Link href="/send" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold" style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}>
+                <Plus className="w-4 h-4" /> Send money
+              </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {recentTxns.map(t => {
+                const st = TRANSACTION_STATUS_LABELS[t.status]
+                const sendCur = CURRENCIES[t.send_currency as keyof typeof CURRENCIES]
+                const recCur = CURRENCIES[t.receive_currency as keyof typeof CURRENCIES]
+                return (
+                  <Link href={`/transactions/${t.id}`} key={t.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                    <div className="w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center text-lg shrink-0">
+                      {t.recipient_country ? (COUNTRY_FLAGS[t.recipient_country] ?? '🌍') : '🌍'}
                     </div>
-                    <span className="text-xs text-gray-400">{p.task_count} tasks</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-brand-700 transition-colors">{p.name}</h3>
-                  {p.description && <p className="text-xs text-gray-400 mb-3 truncate">{p.description}</p>}
-                  <div className="mt-auto">
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-                      <span>Progress</span>
-                      <span>{pct}%</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900 text-sm truncate">{t.recipient_name ?? 'Transfer'}</div>
+                      <div className="text-xs text-gray-500">{timeAgo(t.created_at)}</div>
                     </div>
-                    <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                      <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${pct}%` }}></div>
+                    <div className="text-right shrink-0">
+                      <div className="font-semibold text-gray-900 text-sm">
+                        -{sendCur?.symbol}{t.send_amount.toFixed(2)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {recCur?.symbol}{t.receive_amount.toLocaleString()} {t.receive_currency}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              )
-            })}
-            <Link
-              href="/projects/new"
-              className="border-2 border-dashed border-gray-200 rounded-2xl p-5 flex flex-col items-center justify-center text-gray-400 hover:border-brand-300 hover:text-brand-500 transition-colors min-h-[160px]"
-            >
-              <Plus className="w-8 h-8 mb-2" />
-              <span className="text-sm font-medium">New project</span>
-            </Link>
-          </div>
-        )}
+                    <span className={`ml-1 shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${st?.bg} ${st?.color}`}>
+                      {st?.label}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </main>
+
+      <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-gray-100 grid grid-cols-4 py-2 px-2">
+        {[
+          { icon: '🏠', label: 'Home', href: '/dashboard' },
+          { icon: '💸', label: 'Send', href: '/send' },
+          { icon: '📋', label: 'History', href: '/transactions' },
+          { icon: '👤', label: 'Profile', href: '/settings' },
+        ].map(n => (
+          <Link key={n.label} href={n.href} className="flex flex-col items-center gap-0.5 py-1">
+            <span className="text-xl">{n.icon}</span>
+            <span className="text-xs text-gray-500">{n.label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   )
 }

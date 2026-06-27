@@ -1,15 +1,28 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'TaskTimeline Pro — Visual Project Planning',
-  description: 'The most intuitive Gantt-style timeline for teams. Plan, track, and collaborate on any project — beautifully.',
-  keywords: 'project management, gantt chart, timeline, task management, team collaboration',
+  title: 'RemitFlow — Send Money to Africa Fast & Cheap',
+  description: 'Send money from Europe and USA to 20+ African countries. Bank transfer, mobile money (MTN, M-Pesa, Airtel, Orange). FCA regulated. Best exchange rates.',
+  keywords: 'remittance, send money to Africa, mobile money, MTN, M-Pesa, Airtel, bank transfer, Nigeria, Kenya, Ghana, exchange rates',
   openGraph: {
-    title: 'TaskTimeline Pro',
-    description: 'Visual project timelines for modern teams',
+    title: 'RemitFlow — Faster, cheaper money transfers to Africa',
+    description: 'Send money to 20+ African countries. Mobile money, bank transfer. FCA regulated.',
     type: 'website',
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'RemitFlow',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#7c3aed',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
